@@ -2,4 +2,4 @@
 
 Demo project with these endpoints:
 
-  * POST /watches
+  * POST /watches - inserts new watch
