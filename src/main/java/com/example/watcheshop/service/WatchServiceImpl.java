@@ -17,4 +17,9 @@ public class WatchServiceImpl implements WatchService {
     public Watch save(Watch watch) {
         return watchRepository.save(watch);
     }
+
+    @Override
+    public boolean findDuplicity(Watch watch) {
+        return !watchRepository.findByTitle(watch.getTitle()).isEmpty();
+    }
 }

@@ -3,11 +3,14 @@ package com.example.watcheshop;
 import com.example.watcheshop.api.v1.dto.WatchInputDTO;
 import com.example.watcheshop.model.Watch;
 import com.example.watcheshop.repository.WatchRepository;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.time.Duration;
@@ -39,6 +42,11 @@ class WatchControllerIT {
                 .build();
     }
 
+    @AfterEach
+    public void tearDown() {
+        watchRepository.deleteAll();
+    }
+
     @Test
     void testCreateWatch() {
         WatchInputDTO dto = prepareInputDTO();
@@ -61,6 +69,23 @@ class WatchControllerIT {
         assertThat(watches.iterator().next()).isEqualToIgnoringGivenFields(
                 getExpectedWatch(), "id"
         );
+    }
+
+    @Test
+    void testCreateWatchWithConflict() {
+        watchRepository.save(getExpectedWatch());
+        WatchInputDTO dto = prepareInputDTO();
+
+        webTestClient.post()
+                .uri(API_WATCH)
+                .contentType(APPLICATION_JSON)
+                .accept(APPLICATION_JSON)
+                .bodyValue(dto)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.CONFLICT);
+
+        Iterable<Watch> watches = watchRepository.findAll();
+        assertThat(watches).hasSize(1);
     }
 
     private WatchInputDTO prepareInputDTO() {

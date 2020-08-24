@@ -2,6 +2,7 @@ package com.example.watcheshop.api.v1.mapper;
 
 import com.example.watcheshop.api.v1.dto.WatchInputDTO;
 import com.example.watcheshop.api.v1.dto.WatchOutputDTO;
+import com.example.watcheshop.exception.InvalidWatchInputException;
 import com.example.watcheshop.model.Watch;
 import org.springframework.stereotype.Component;
 
@@ -17,9 +18,22 @@ public class WatchMapperImpl implements WatchMapper {
 
         watch.setId(UUID.randomUUID());
         watch.setTitle(dto.title);
-        watch.setPrice(Integer.parseInt(dto.price));
+
+        try {
+            watch.setPrice(Integer.parseInt(dto.price));
+        }
+        catch (NumberFormatException e) {
+            throw new InvalidWatchInputException(e.getMessage());
+        }
+
         watch.setDescription(dto.description);
-        watch.setFountain(Base64.getDecoder().decode(dto.fountain));
+
+        try {
+            watch.setFountain(Base64.getDecoder().decode(dto.fountain));
+        }
+        catch (IllegalArgumentException e) {
+            throw new InvalidWatchInputException(e.getMessage());
+        }
 
         return watch;
     }
